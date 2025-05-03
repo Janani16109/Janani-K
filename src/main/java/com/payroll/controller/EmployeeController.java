@@ -1,8 +1,10 @@
 package com.payroll.controller;
 
+import com.payroll.entity.Benefits;
 import com.payroll.entity.Employee;
 import com.payroll.entity.Salary;
 import com.payroll.entity.Tax;
+import com.payroll.service.BenefitsService; 
 import com.payroll.service.EmployeeService;
 import com.payroll.service.TaxService;
 import java.time.LocalDate;
@@ -12,11 +14,13 @@ import java.util.Scanner;
 public class EmployeeController {
     private final EmployeeService employeeService;
     private final TaxService taxService;
+    private final BenefitsService benefitsService;
     private final Scanner scanner;
 
-    public EmployeeController(EmployeeService employeeService, TaxService taxService) {
+    public EmployeeController(EmployeeService employeeService, TaxService taxService, BenefitsService benefitsService) {
         this.employeeService = employeeService;
         this.taxService = taxService;
+        this.benefitsService = benefitsService;
         this.scanner = new Scanner(System.in);
     }
 
@@ -149,5 +153,81 @@ public class EmployeeController {
         System.out.println("Professional Tax: " + tax.getProfessionalTax());
         System.out.println("Income Tax: " + tax.getIncomeTax());
         System.out.println("Total Tax Amount: " + tax.getTotalTaxAmount());
+    }
+    
+    public void manageBenefits(Long employeeId) {
+        Employee employee = employeeService.getEmployeeById(employeeId);
+        if (employee == null) {
+            System.out.println("Employee not found!");
+            return;
+        }
+    
+        Benefits benefits = benefitsService.getBenefitsByEmployeeId(employeeId);
+        if (benefits == null) {
+            benefits = benefitsService.createBenefits(employee);
+            System.out.println("New benefits package created!");
+        }
+    
+        while (true) {
+            System.out.println("\n=== Employee Benefits ===");
+            System.out.println("1. View Benefits");
+            System.out.println("2. Update Health Insurance");
+            System.out.println("3. Update Provident Fund");
+            System.out.println("4. Update Gratuity");
+            System.out.println("5. Toggle Meal Card");
+            System.out.println("6. Toggle Transport Allowance");
+            System.out.println("7. Back to Main Menu");
+            System.out.print("Choose an option: ");
+    
+            String choice = scanner.nextLine();
+            switch (choice) {
+                case "1":
+                    displayBenefits(benefits);
+                    break;
+                case "2":
+                    System.out.print("Enter new Health Insurance amount: ");
+                    double healthInsurance = Double.parseDouble(scanner.nextLine());
+                    benefits.setHealthInsurance(healthInsurance);
+                    break;
+                case "3":
+                    System.out.print("Enter new Provident Fund percentage (0-100): ");
+                    double pfPercentage = Double.parseDouble(scanner.nextLine());
+                    benefits.setProvidentFund(employee.getBasicSalary() * (pfPercentage / 100));
+                    break;
+                case "4":
+                    System.out.print("Enter new Gratuity percentage (0-100): ");
+                    double gratuityPercentage = Double.parseDouble(scanner.nextLine());
+                    benefits.setGratuity(employee.getBasicSalary() * (gratuityPercentage / 100));
+                    break;
+                case "5":
+                    benefits.setMealCard(!benefits.isMealCard());
+                    System.out.println("Meal Card: " + (benefits.isMealCard() ? "Enabled" : "Disabled"));
+                    break;
+                case "6":
+                    benefits.setTransportAllowance(!benefits.isTransportAllowance());
+                    System.out.println("Transport Allowance: " + (benefits.isTransportAllowance() ? "Enabled" : "Disabled"));
+                    break;
+                case "7":
+                    benefitsService.updateBenefits(benefits);
+                    return;
+                default:
+                    System.out.println("Invalid option!");
+            }
+    
+            if (!choice.equals("1") && !choice.equals("7")) {
+                benefitsService.updateBenefits(benefits);
+                System.out.println("Benefits updated successfully!");
+            }
+        }
+    }
+    
+    private void displayBenefits(Benefits benefits) {
+        System.out.println("\n=== Current Benefits ===");
+        System.out.println("Health Insurance: " + benefits.getHealthInsurance());
+        System.out.println("Provident Fund: " + benefits.getProvidentFund());
+        System.out.println("Gratuity: " + benefits.getGratuity());
+        System.out.println("Meal Card: " + (benefits.isMealCard() ? "Yes" : "No"));
+        System.out.println("Transport Allowance: " + (benefits.isTransportAllowance() ? "Yes" : "No"));
+        System.out.println("Effective Date: " + benefits.getEffectiveDate());
     }
 }

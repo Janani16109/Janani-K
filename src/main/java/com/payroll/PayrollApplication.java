@@ -8,6 +8,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 import com.payroll.controller.EmployeeController;
 import com.payroll.controller.PayrollController;
+import com.payroll.service.BenefitsService;
 import com.payroll.service.EmployeeService;
 import com.payroll.service.UserService;
 import com.payroll.service.TaxService;
@@ -37,9 +38,10 @@ public class PayrollApplication {
             UserService userService = new UserService(userRepository);
             EmployeeService employeeService = new EmployeeService(session);
             TaxService taxService = new TaxService(taxRepository);
+            BenefitsService benefitsService = new BenefitsService(session);
 
             // Initialize controllers
-            EmployeeController employeeController = new EmployeeController(employeeService, taxService);
+            EmployeeController employeeController = new EmployeeController(employeeService, taxService, benefitsService);
             PayrollController payrollController = new PayrollController(userService, employeeController);
 
             // Start the application

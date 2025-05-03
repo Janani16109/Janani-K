@@ -45,7 +45,7 @@ public class PayrollController {
         System.out.println("2. View Employee");
         System.out.println("3. Calculate Salary");
         System.out.println("4. Generate Tax Report");
-        System.out.println("5. Logout");
+        System.out.println("5. Manage Benefits");
         System.out.println("6. Exit");
         System.out.print("Choose an option: ");
 
@@ -68,8 +68,13 @@ public class PayrollController {
                 generateTaxReport();
                 break;
             case "5":
-                currentUser = null;
-                System.out.println("Logged out successfully!");
+                if ("ADMIN".equals(currentUser.getRole()) || "HR".equals(currentUser.getRole())) {
+                    System.out.print("Enter Employee ID: ");
+                    Long employeeId = Long.parseLong(scanner.nextLine());
+                    employeeController.manageBenefits(employeeId);
+                } else {
+                    System.out.println("Access denied!");
+                }
                 break;
             case "6":
                 System.out.println("Thank you for using the Payroll System!");
@@ -77,6 +82,9 @@ public class PayrollController {
                 break;
             default:
                 System.out.println("Invalid option!");
+                currentUser = null;
+                System.out.println("Logged out successfully!");
+
         }
     }
 
